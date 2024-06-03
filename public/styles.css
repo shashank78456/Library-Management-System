@@ -1,0 +1,34 @@
+.nav-item:hover{
+    color: var(--bs-primary);
+}
+.card{
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem;
+    background-color: var(--bs-light)
+}
+li{
+    padding: 0.3rem;
+}
+#filler{
+    height: 3rem;
+}
+#return-books, #borrow-history, #user-requests, #prompt{
+    display: none;
+}
+.remove:hover{
+    background-color: red !important;
+    color: white;
+}
+.deny:hover{
+    background-color: red !important;
+    color: white;
+}
+.accept:hover{
+    background-color: green!important;
+    color: white;
+}
+.add:hover{
+    background-color: green!important;
+    color: white;
+}
