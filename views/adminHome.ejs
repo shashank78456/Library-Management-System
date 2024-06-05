@@ -45,9 +45,10 @@
                     <button type="button" class="btn btn-primary btn-block">Add Books</button>
                 </div>
                 <ol class="py-2">
+                    <% for(int i=0; i<catalog.length; i++) { if(stat===0) document.getElementByClass("card")[0].style.color=red;%>
                     <li>
                         <div class="card">
-                            <div class="cbook text-start px-2">A route method is derived from one of the HTTP methods, and is attached to an instance of the express class.</div>
+                            <div class="cbook text-start px-2"><%= catalog[i] %></div>
                             <div class="col text-end py-2">
                                 <span class="col text-end p-2">
                                     <button type="click" class="add btn bg-white btn-block">Add</button>
@@ -58,6 +59,7 @@
                             </div>
                         </div>
                     </li>
+                    <% } %>
                 </ol>
             <div class="col text-center py-2">
                 <button type="submit" class="btn btn-primary btn-block">Save Changes</button>

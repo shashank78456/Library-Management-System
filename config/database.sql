@@ -20,6 +20,7 @@ CREATE TABLE Requests {
     requestid INT AUTO_INCREMENT NOT NULL,
     userid INT,
     bookid INT,
+    stat INT DEFAULT 0,
     PRIMARY KEY (requestid),
     FOREIGN KEY (userid) REFERENCES Users(userid),
     FOREIGN KEY (bookid) REFERENCES Books(bookid)
@@ -28,5 +29,6 @@ CREATE TABLE Requests {
 CREATE TABLE BorrowBooks {
     userid INT,
     bookid INT,
+    currently INT DEFAULT 0,
     PRIMARY KEY (userid, bookid)
 }

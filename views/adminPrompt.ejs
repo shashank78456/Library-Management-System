@@ -7,34 +7,33 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="../public/styles.css">
     <script src="../public/index.js"></script>
-    <title>Client Page</title>
+    <title>Admin Page</title>
 </head>
 <body>
     <nav class="navbar fixed-top bg-info px-2 py-4 text-white fs-5">
         <div class="container-fluid-start">
-            <span id="view" class="nav-item px-3">View Books</span>
-            <span id="return" class="nav-item px-3">Return Books</span>
-            <span id="borrow" class="nav-item px-3">Borrow History</span>
+            <span id="catalog" class="nav-item px-3">Manage Catalog</span>
+            <span id="requests" class="nav-item px-3">User Requests</span>
         </div>
     </nav>
     <div id="filler"></div>
-    <div id="borrow-history">
-        <div class="container py-5">
-            <div class="row justify-content-center">
-                <h3 class="text-center">Borrow History</h3>
-                <div class="w-75">
-                    <ol class="py-2">
-                        <% for(int i=0; i<borrowBooks.length; i++) { %>
-                        <li>
-                            <div class="card">
-                                <div class="col text-start"><%= borrowBooks[i] %></div>
+    <div id="manage-catalog">
+        <div id="prompt">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="card bg-white w-50 p-4">
+                        <form id="prompt-form" class="align-items-center">
+                            <div class="form-group py-3">
+                                <input type="text" class="form-control" id="new-book" placeholder="Enter Book Name" required>
                             </div>
-                        </li>
-                        <% } %>
-                    </ol>
+                            <div class="col text-center p-2">
+                                <button type="submit" class="btn btn-primary btn-block">Add Book</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-            </div>
+        </div>
     </div>
 </body>
 </html>

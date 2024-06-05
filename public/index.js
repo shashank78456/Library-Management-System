@@ -45,141 +45,120 @@ function signupHandler(){
 }
 
 function clientHandler(){
-    document.getElementById("view").addEventListener("click", ()=> {
-        
-        document.getElementById("view-books").style.display = block;
-        document.getElementById("return-books").style.display = none;
-        document.getElementById("borrow-history").style.display = none;
-
-        //loading-animation
-        //get request for books
+    document.getElementById("view").addEventListener("click", async ()=> {
+        await get(`https://localhost:3000/client/home`);
     })
     
-    document.getElementById("return").addEventListener("click", ()=> {
-        
-        document.getElementById("view-books").style.display = none;
-        document.getElementById("return-books").style.display = block;
-        document.getElementById("borrow-history").style.display = none;
-
-        //loading-animation
-        //get request for books to be returned
+    document.getElementById("return").addEventListener("click", async ()=> {
+        await get(`https://localhost:3000/client/return`);
     })
 
-    document.getElementById("borrow").addEventListener("click", ()=> {
-        
-        document.getElementById("view-books").style.display = none;
-        document.getElementById("return-books").style.display = none;
-        document.getElementById("borrow-history").style.display = block;
-
-        //loading-animation
-        //get request for history
+    document.getElementById("borrow").addEventListener("click", async ()=> {
+        await get(`https://localhost:3000/client/history`);
     })
 
-    document.getElementById("borrow-form").addEventListener("submit", (e)=>{
+    document.getElementById("borrow-form").addEventListener("submit", async (e)=>{
 
         e.preventDefault();
         const userType = document.getElementById("user-type").value;
         const username = document.getElementById("username").value;
         const password = document.getElementById("pasword").value;
 
-        //post request to server
-
+        await post(`https://localhost:3000/client/home`, {books: books, booksid: booksid});
     })
 
-
-    document.getElementById("return-form").addEventListener("submit", (e)=>{
+    document.getElementById("return-form").addEventListener("submit", async (e)=>{
 
         e.preventDefault();
-        const userType = document.getElementById("user-type").value;
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("pasword").value;
+        const returnBooks = document.getElementsByClassName("return");
+        let booksToReturn = [];
+        for(let i=0; i<returnBooks; i++) {
+             booksToReturn.add(returnBooks.value);
+        }
 
-        //post request to server
-
+        await post(`https://localhost:3000/client/return`, {booksToReturn: booksToReturn});
     })
 }
 
 function adminHandler(){
 
-    document.getElementById("catalog").addEventListener("click", ()=> {
-        
-        document.getElementById("manage-catalog").style.display = block;
-        document.getElementById("user-requests").style.display = none;
-
-        //loading-animation
-        //get request for all books
+    document.getElementById("catalog").addEventListener("click", async ()=> {
+        await get(`https://localhost:3000/admin/home`);
     })
 
-    document.getElementById("requests").addEventListener("click", ()=> {
-        
-        document.getElementById("manage-catalog").style.display = none;
-        document.getElementById("user-requests").style.display = block;
-
-        //loading-animation
-        //get request for user requests
+    document.getElementById("requests").addEventListener("click", async ()=> {
+        await get(`https://localhost:3000/admin/requests`);
     })
 
-    document.getElementById("catalog-form").addEventListener("submit", (e)=>{
-
-        e.preventDefault();
-        const userType = document.getElementById("user-type").value;
-        const name = document.getElementById("name").value;
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("pasword").value;
-        const cpassword = document.getElementById("cpassword").value;
-
-        //post request to server
-
+    document.getElementById("prompt").addEventListener("click", async ()=> {
+        await get(`https://localhost:3000/admin/add`);
     })
 
-    document.getElementById("prompt").addEventListener("click", ()=> {
-        
-        //document.getElementById("manage-catalog").style.display = none; change color
-        document.getElementById("prompt").style.display = block;
-
-        document.getElementById("prompt-form").addEventListener("submit", (e)=> {
+    document.getElementById("prompt-form").addEventListener("submit", async (e)=> {
             
-            e.preventDefault();
-            const bookName = document.getElementById("new-book").value;
-
-            //post request to server
-
-            //return same color for catalog
-
-            document.getElementById("prompt").style.display = none;
-        })
+        e.preventDefault();
+        const bookName = document.getElementById("new-book").value;
+        await post({book: bookName}, `https://localhost:3000/admin/add`); 
     })
+
+    let isAddClicked = [];
+    for(let i=0; i<document.getElementsByClassName("add").length; i++) {
+        isAddClicked.add(false);
+    }
 
     let booksToAdd = [];
     const addButton = document.getElementsByClassName("add");
     for(let i=0; i<addButton.length; i++) {
         addButton[i].addEventListener("click", ()=> {
-            addButton[i].style.backgroundColor = "green";
-            addButton[i].style.color = "white";
-
-            booksToAdd.add(document.getElementsByClassName("cbook"[i].text));
+            if(!isAddClicked) {
+                isAddClicked[i]=true;
+                addButton[i].style.backgroundColor = "green";
+                addButton[i].style.color = "white";
+                booksToAdd.add(document.getElementsByClassName("cbook"[i].text));
+            }
+            else{
+                isAddClicked[i]=false;
+                addButton[i].style.backgroundColor = "white";
+                addButton[i].style.color = "black";
+                delete booksToAdd[booksToAdd.indexOf(document.getElementsByClassName("cbook"[i].text))];
+            }
         })
+    }
+
+    let isRemoveClicked = [];
+    for(let i=0; i<document.getElementsByClassName("add").length; i++) {
+        isRemoveClicked.add(false);
     }
 
     let booksToRemove = [];
     const removeButton = document.getElementsByClassName("remove");
     for(let i=0; i<removeButton.length; i++) {
         removeButton[i].addEventListener("click", ()=> {
-            removeButton[i].style.backgroundColor = "red";
-            removeButton[i].style.color = "white";
-
-            booksToRemove.add(document.getElementsByClassName("cbook"[i].text));
+            if(!isRemoveClicked) {
+                isRemoveClicked=true;
+                removeButton[i].style.backgroundColor = "red";
+                removeButton[i].style.color = "white";
+                booksToRemove.add(document.getElementsByClassName("cbook"[i].text));
+            }
+            else {
+                isRemoveClicked=false;
+                removeButton[i].style.backgroundColor = "white";
+                removeButton[i].style.color = "black";
+                delete booksToRemove[booksToRemove.indexOf(document.getElementsByClassName("cbook"[i].text))];
+            }
         })
     }
 
-    document.getElementById("catalog-form").addEventListener("submit", (e)=>{
+    document.getElementById("catalog-form").addEventListener("submit", async (e)=>{
         e.preventDefault();
 
-        //post booksToRemove to server
+        await post({booksToAdd: booksToAdd, booksToRemove: booksToRemove}, `https://localhost:3000/admin/home`);
     })
 
     let usersAccept = [];
+    let bookAccept = [];
     let usersDeny = [];
+    let bookDeny = [];
     const acceptButton = document.getElementsByClassName("accept");
     const denyButton = document.getElementsByClassName("deny");
     for(let i=0; i<denyButton.length; i++) {
@@ -187,28 +166,23 @@ function adminHandler(){
             acceptButton[i].style.backgroundColor = "green";
             acceptButton[i].style.color = "white";
 
-            usersAccept.add(document.getElementsByClassName("user"[i].text));
+            usersAccept.add(document.getElementsByClassName("user")[i].text);
+            bookAccept.add(document.getElementsByClassName("book")[i].text);
         })
         
         denyButton[i].addEventListener("click", ()=> {
             denyButton[i].style.backgroundColor = "red";
             denyButton[i].style.color = "white";
 
-            usersDeny.add(document.getElementsByClassName("user"[i].text));
+            usersDeny.add(document.getElementsByClassName("user")[i].text);
+            bookDeny.add(document.getElementsByClassName("book")[i].text);
         })
     }
 
-    document.getElementById("catalog-form").addEventListener("submit", (e)=>{
+    document.getElementById("user-requests-form").addEventListener("submit", async (e)=>{
         e.preventDefault();
 
-        //post booksToAdd and booksToRemove to server
-    })
-
-    document.getElementById("user-requests-form").addEventListener("submit", (e)=>{
-        e.preventDefault();
-
-        //post userAccept to server
-        //post userDeny to server
+        await post({usersAccept: usersAccept, bookAccept: bookAccept, usersDeny: usersDeny, bookDeny:bookDeny}, `https://localhost:3000/admin/requests`);
     })
 }
 
@@ -264,3 +238,5 @@ let title = document.title;
 
 if(title==="Login Page") loginHandler();
 else if(title==="Signup Page") signupHandler();
+else if(title==="Client Page") clientHandler();
+else if(title==="Admin Page") adminHandler();

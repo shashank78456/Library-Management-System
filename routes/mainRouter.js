@@ -21,7 +21,7 @@ router.post("/", async (req,res) => {
     db.query = (sql, [username], (err, result) => {
         if(err)
             return res.status(500).send(err.message);
-        else if(result.length === 0) {
+        else if(result.length===0) {
             return res.sendStatus(404);
         }
         else {
