@@ -60,11 +60,13 @@ function clientHandler(){
     document.getElementById("borrow-form").addEventListener("submit", async (e)=>{
 
         e.preventDefault();
-        const userType = document.getElementById("user-type").value;
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("pasword").value;
+        let booksToBorrow = [];
+        const borrowBooks = document.getElementsByClassName("borrow")
+        for(let i=0; i<borrowBooks.length; i++) {
+            booksToBorrow.add(borrowBooks[i].value);
+        }
 
-        await post(`https://localhost:3000/client/home`, {books: books, booksid: booksid});
+        await post(`https://localhost:3000/client/home`, {books: booksToBorrow});
     })
 
     document.getElementById("return-form").addEventListener("submit", async (e)=>{

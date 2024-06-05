@@ -2,6 +2,7 @@ const express = require("express");
 const clientRouter = express.Router();
 const verifyToken = require("./auth");
 const db = require("./config/db");
+const { use } = require("./adminRouter");
 
 router.get("/home", verifyToken, (req,res) => {
 
@@ -15,9 +16,27 @@ router.get("/home", verifyToken, (req,res) => {
 })
 
 router.post("/home", verifyToken, (req,res) => {
-    const book = req.book;
+    const user = req.user;
+    const books = req.books;
 
-    const sql = "INSERT INTO Rs ()";
+    const sqluser = "SELECT userid FROM Users WHERE username = ?";
+    db.query(sqluser, [user.username], (err,result) => {
+        if(err)
+            res.status(500);
+        else {
+            const userid = result;
+            for(let i=0; i<books.length; i++) {
+                const bookid = books[i];
+                const sql = "INSERT INTO Requests (userid, bookid) VALUES (?, ?)";
+                db.query(sql, [userid, bookid], (err, result) => {
+                    if(err)
+                        res.status(500);
+                    else
+                        res.status(200);
+                });
+            }
+        }
+    });
 })
 
 
@@ -29,8 +48,7 @@ router.get("/history", verifyToken, (req,res) => {
             res.status(500);
         else {
             const userid = result;
-            //give apt sql
-            const sql = "";
+            const sql = "SELECT bookid FROM BorrowBooks WHERE userid = ? AND currently = 0";
             db.query(sql, [userid], (err,result) => {
                 if(err)
                     res.status(500).send(err.message);
@@ -39,10 +57,6 @@ router.get("/history", verifyToken, (req,res) => {
             });
         }
     });
-})
-
-router.post("/history", verifyToken, (req,res) => {
-    const user = req.user;
 })
 
 router.get("/return", verifyToken, (req,res) => {
