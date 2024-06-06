@@ -13,8 +13,8 @@ router.get("/home", verifyToken, (req,res) => {
             let books = [];
             let bookids = [];
             for(let i=0; i<result.length; i++) {
-                books.add(result[i].bookname);
-                bookids.add(result[i].bookid);
+                books.push(result[i].bookname);
+                bookids.push(result[i].bookid);
             }
             res.render("clientHome",{books: books, bookids: bookids});
         }
@@ -23,7 +23,7 @@ router.get("/home", verifyToken, (req,res) => {
 
 router.post("/home", verifyToken, (req,res) => {
     const user = req.user;
-    const books = req.body.books;
+    const bookid = req.body.book;
 
     const sqluser = "SELECT userid FROM Users WHERE username = ?";
     db.query(sqluser, [user.username], (err,result) => {
@@ -31,38 +31,48 @@ router.post("/home", verifyToken, (req,res) => {
             res.sendStatus(500);
         else {
             const userid = result[0].userid;
-            for(let i=0; i<books.length; i++) {
-                const bookid = books[i];
-                const sql = "INSERT INTO Requests (userid, bookid) VALUES (?, ?)";
-                db.query(sql, [userid, bookid], (err, result) => {
-                    if(err)
-                        res.sendStatus(500);
-                    else
-                        res.sendStatus(200);
-                });
-            }
+            const sql = "INSERT INTO Requests (userid, bookid) VALUES (?, ?)";
+            db.query(sql, [userid, bookid], (err, result) => {
+                if(err)
+                    res.sendStatus(500);
+                else
+                    res.sendStatus(200);
+            });
         }
     });
 })
 
 
 router.get("/history", verifyToken, (req,res) => {
+    const user = req.user;
 
     const sql1 = "SELECT userid FROM Users WHERE username = ?";
-    db.query(sql1, [username], (err,result) => {
+    db.query(sql1, [user.username], (err,result) => {
         if(err)
-            res.status(500);
+            res.sendStatus(500);
         else {
-            const userid = result;
-            const sql = "SELECT bookname FROM Requests WHERE userid = ? AND stat = 1";
+            const userid = result[0].userid;
+            const sql = "SELECT bookid FROM Requests WHERE userid = ? AND stat = 1";
             db.query(sql, [userid], (err,result) => {
                 if(err)
                     res.sendStatus(500);
                 else {
                     let history = [];
+                    const limit = result.length-1;
                     for(let i=0; i<result.length; i++) {
-                        history.add(result[i].bookname);
+                        let bookid = result[i].bookid;
+                        const sqlbook = "SELECT bookname FROM Books WHERE bookid = ?";
+                        db.query(sqlbook, [bookid], (err,result) => {
+                            if(err)
+                                res.sendStatus(500);
+                            else {
+                                history.push(result[0].bookname);
+                                if(i===limit)
+                                    res.render("clientHistory",{borrowBooks: history});
+                            }
+                        });
                     }
+                    if(limit===-1)
                     res.render("clientHistory",{borrowBooks: history});
                 }
             });
@@ -71,11 +81,12 @@ router.get("/history", verifyToken, (req,res) => {
 })
 
 router.get("/return", verifyToken, (req,res) => {
+    const user = req.user;
 
     const sql1 = "SELECT userid FROM Users WHERE username = ?";
-    db.query(sql1, [username], (err,result) => {
+    db.query(sql1, [user.username], (err,result) => {
         if(err)
-            res.status(500);
+            res.sendStatus(500);
         else {
             const userid = result[0].userid;
             const sql = "SELECT bookid FROM Requests WHERE userid = ? AND currently = 1";
@@ -83,20 +94,26 @@ router.get("/return", verifyToken, (req,res) => {
                 if(err)
                     res.sendStatus(500);
                 else {
-                    const sqlbook = "SELECT bookname, bookid FROM Books WHERE bookid = ?";
-                    db.query(sqlbook, [bookid], (err, result) => {
-                        if(err)
-                            res.status(500);
-                        else {
-                            const books = [];
-                            const bookids = [];
-                            for(let i=0; i<result.length; i++) {
-                                books.add(result[i].bookname);
-                                bookids.add(result[i].bookid);
+                    let books = [];
+                    let bookids = [];
+                    const limit = result.length-1;
+                    for(let i=0; i<result.length; i++) {
+                        const bookid = result[i].bookid;
+                        const sqlbook = "SELECT bookname FROM Books WHERE bookid = ?";
+                        db.query(sqlbook, [bookid], (err, result) => {
+                            if(err)
+                                res.sendStatus(500);
+                            else {                            
+                                books.push(result[0].bookname);
+                                bookids.push(bookid);
+                                if(i===limit) {
+                                    res.render("clientReturn",{returnBooks: books, bookids: bookids});
+                                }
                             }
-                            res.render("clientReturn",{returnBooks: books, bookids: bookids});
-                        }
-                    });
+                        });
+                    }
+                    if(limit===-1)
+                        res.render("clientReturn",{returnBooks: books, bookids: bookids});
                 }
             });
         }
@@ -104,7 +121,7 @@ router.get("/return", verifyToken, (req,res) => {
 })
 
 router.post("/return", verifyToken, (req,res) => {
-    const books = req.body.booksToReturn;
+    const book = req.body.bookToReturn;
     const user = req.user;
 
     const sql1 = "SELECT userid FROM Users WHERE username = ?";
@@ -113,20 +130,18 @@ router.post("/return", verifyToken, (req,res) => {
             res.sendStatus(500);
         else {
             const userid = result[0].userid;
-            for(let i=0; i<books.length; i++) {
-                const sql = "UPDATE Requests SET currently = 0, stat = 0 WHERE bookid = ? AND userid = ?";
-                db.query(sql, [books[i], userid], (err, result) => {
-                    if(err)
-                        res.status(500);
-                    else
-                        res.status(200);
-                });
-            }
+            const sql = "UPDATE Requests SET currently = 0, stat = 1 WHERE bookid = ? AND userid = ?";
+            db.query(sql, [book, userid], (err, result) => {
+                if(err)
+                    res.sendStatus(500);
+                else
+                    res.sendStatus(200);
+            });
         }
     });
 })
 
-router.post("/admin_request", verifyToken, (req,res) => {
+router.post("/adreq", verifyToken, (req,res) => {
     const hasRequested = req.body.hasRequested;
     const user = req.user;
 
@@ -139,9 +154,9 @@ router.post("/admin_request", verifyToken, (req,res) => {
             const sql = "UPDATE Users SET adminrequest = 1 WHERE userid = ?";
             db.query(sql, [userid], (err, result) => {
                 if(err)
-                    res.status(500);
+                    res.sendStatus(500);
                 else
-                    res.status(200);
+                    res.sendStatus(200);
             });
         }
     });

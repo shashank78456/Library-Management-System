@@ -8,7 +8,8 @@ function loginHandler(){
         const password = document.getElementById("password").value;
 
         const response = await post({userType: userType, username: username, password: password},`http://localhost:3000`);
-        if(response.isValid)
+        const res = await response.json();
+        if(res.isValid)
             window.location.href = `http://localhost:3000/${userType}/home`;
         else
             window.alert("Wrong credentials");
@@ -25,7 +26,7 @@ async function post(data, url) {
             body: JSON.stringify(data),
         })
         .then(response => {
-            resolve(response.json());
+            resolve(response);
         })
         .catch(error => {
             console.error(error);

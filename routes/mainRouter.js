@@ -50,7 +50,7 @@ router.post("/signup", async (req,res) => {
     db.query(sqlCheck, [username], async (err, result) => {
         if(err)
             res.status(500).send(err.message);
-        else if(result.length != 0) {2
+        else if(result.length != 0) {
             return res.send({isValid: false});
         }
         else {

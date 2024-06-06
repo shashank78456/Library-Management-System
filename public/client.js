@@ -1,7 +1,7 @@
 function clientHandler(){
 
     document.getElementById("reqadmin").addEventListener("click", async () => {
-        await post(`http://localhost:3000/client/admin_request`, {hasRequested: true});
+        await post({hasRequested: true}, `http://localhost:3000/client/adreq`);
     });
 
     document.getElementById("view").addEventListener("click", async ()=> {
@@ -16,30 +16,30 @@ function clientHandler(){
         window.location.href = `http://localhost:3000/client/history`;
     })
 
-    document.getElementById("borrow-form").addEventListener("submit", async (e)=>{
+    try {
+    const borrowBooks = document.getElementsByClassName("borrow");
+    for(let i=0; i<borrowBooks.length; i++) {
+        borrowBooks[i].addEventListener("click", async () => {
+            await post({book: borrowBooks[i].value}, `http://localhost:3000/client/home`);
+            window.alert("Requested Successfully");
+            window.location.href = `http://localhost:3000/client/home`;
+        })
+    }
+    }
+    catch{};
 
-        e.preventDefault();
-        let booksToBorrow = [];
-        const borrowBooks = document.getElementsByClassName("borrow")
-        for(let i=0; i<borrowBooks.length; i++) {
-            booksToBorrow.add(borrowBooks[i].value);
-        }
-
-        await post(`http://localhost:3000/client/home`, {books: booksToBorrow});
-    })
-
-    document.getElementById("return-form").addEventListener("submit", async (e)=>{
-
-        e.preventDefault();
+    try {
         const returnBooks = document.getElementsByClassName("return");
-        let booksToReturn = [];
-        for(let i=0; i<returnBooks; i++) {
-             booksToReturn.add(returnBooks.value);
+        for(let i=0; i<returnBooks.length; i++) {
+            returnBooks[i].addEventListener("click", async () => {
+                await post({bookToReturn: returnBooks[i].value}, `http://localhost:3000/client/return`);
+                window.alert("Returned Successfully");
+                window.location.href = `http://localhost:3000/client/return`;
+            })
         }
-
-        await post(`http://localhost:3000/client/return`, {booksToReturn: booksToReturn});
-    })
-}
+    }
+    catch{};
+}   
 
 async function post(data, url) {
     return new Promise((resolve) => {
@@ -51,7 +51,7 @@ async function post(data, url) {
             body: JSON.stringify(data),
         })
         .then(response => {
-            resolve(response.json());
+            resolve(response);
         })
         .catch(error => {
             console.error(error);

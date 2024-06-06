@@ -10,7 +10,8 @@ function signupHandler(){
         if(await checkStrength(password)) {
             if(cpassword===password) {
                 const response = await post({name: name, username: username, password: password},`http://localhost:3000/signup`);
-                if(response.isValid) {
+                const res = await response.json();
+                if(res.isValid) {
                     window.location.href = `http://localhost:3000/client/home`;
                 }
                 else {
@@ -37,7 +38,7 @@ async function post(data, url) {
             body: JSON.stringify(data),
         })
         .then(response => {
-            resolve(response.json());
+            resolve(response);
         })
         .catch(error => {
             console.error(error);
@@ -49,7 +50,7 @@ async function get(url) {
     return new Promise((resolve) => {
         fetch(url)
         .then(response => {
-            resolve(response.json());
+            resolve(response);
         })
         .catch(error => console.error(error));
     });

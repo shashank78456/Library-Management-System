@@ -15,12 +15,12 @@ router.get("/home", verifyToken, (req,res) => {
             let books = [];
             let stats = [];
             for(let i=0; i<result.length; i++) {
-                bookids.add(result[i].bookid);
-                books.add(result[i].bookname);
-                stats.add(result[i].stat);
+                bookids.push(result[i].bookid);
+                books.push(result[i].bookname);
+                stats.push(result[i].stat);
             }
             const sqlsup =  "SELECT issuperadmin FROM Users WHERE username = ?";
-            db.query(sqlsup, (err,result)=>{
+            db.query(sqlsup, [user.username], (err,result)=>{
                 if(err)
                     res.sendStatus(500);
                 else
@@ -31,12 +31,11 @@ router.get("/home", verifyToken, (req,res) => {
 })
 
 router.post("/home", verifyToken, (req,res) => {
-    const booksToAdd = req.body.booksToAdd;
-    const booksToRemove = req.body.booksToRemove;
-    
-    for(let i=0; i<booksToAdd.length; i++) {
-        let sql = "UPDATE Books SET stat = 1 WHERE bookid = ?";
-        db.query(sql, [booksToAdd[i]], (err, result) => {
+    const book = req.body.book;
+    const isAccepted = req.body.isAccepted;
+    if(isAccepted) {
+        const sql = "UPDATE Books SET stat = 1 WHERE bookid = ?";
+        db.query(sql, [book], (err, result) => {
             if(err)
                 res.sendStatus(500);
             else
@@ -44,9 +43,9 @@ router.post("/home", verifyToken, (req,res) => {
         });
     }
 
-    for(let i=0; i<booksToRemove.length; i++) {
+    else {
         let sql = "UPDATE Books SET stat = 0 WHERE bookid = ?";
-        db.query(sql, [booksToRemove[i]], (err, result) => {
+        db.query(sql, [book], (err, result) => {
             if(err)
                 res.sendStatus(500);
             else
@@ -55,14 +54,14 @@ router.post("/home", verifyToken, (req,res) => {
     }
 })
 
-router.get("/add", verifyToken, (res,req) => {
+router.get("/add", verifyToken, (req,res) => {
     res.render("adminPrompt");
 })
 
-router.post("/add", verifyToken, (res,req) => {
+router.post("/add", verifyToken, (req,res) => {
     const book = req.body.book;
     
-    const sql = "INSERT INTO Books (bookname) VALUES ?";
+    const sql = "INSERT INTO Books (bookname) VALUES (?)";
     db.query(sql, [book], (err,result) => {
         if(err)
             res.sendStatus(500);
@@ -72,9 +71,10 @@ router.post("/add", verifyToken, (res,req) => {
 })
 
 router.get("/requests", verifyToken, (req,res) => {
+    const user = req.user;
 
     const sql1 = "SELECT userid, bookid FROM Requests WHERE stat = 0";
-    db.query(sql1, [username], (err,result) => {
+    db.query(sql1, (err,result) => {
         if(err)
             res.sendStatus(500);
         else {
@@ -82,44 +82,47 @@ router.get("/requests", verifyToken, (req,res) => {
             let userids = [];
             let books = [];
             let bookids = [];
+            const limit = result.length-1;
             for(let i=0; i<result.length; i++) {
-                const userid = result[i].userid;
-                const bookid = result[i].bookid;
+                let userid = result[i].userid;
+                let bookid = result[i].bookid;
                 const sqlb = "SELECT bookname FROM Books WHERE bookid = ?";
                 db.query(sqlb, [bookid], (err,result) => {
                     if(err)
                         res.sendStatus(500);
                     else {
-                        const bookname = result[0].bookid;
+                        let bookname = result[0].bookname;
                         const sqlu = "SELECT username FROM Users WHERE userid = ?";
                         db.query(sqlu, [userid], (err,result) => {
                             if(err)
                                 res.sendStatus(500);
                             else {
-                                const username = result[0].userid;
-                                userids.add(userid);
-                                usernames.add(username);
-                                bookids.add(bookid);
-                                books.add(bookname);
+                                let username = result[0].username;
+                                userids.push(userid);
+                                usernames.push(username);
+                                bookids.push(bookid);
+                                books.push(bookname);
+                                if(i===limit) {
+                                    res.render("adminRequests", {userids: userids, usernames: usernames, bookids: bookids, books: books});
+                                }
                             }
                         });
                     }
                 });
             }
-            res.render("adminRequests", {userids: userids, usernames: usernames, bookids: bookids, books: books});
+            if(limit===-1)
+                res.render("adminRequests", {userids: userids, usernames: usernames, bookids: bookids, books: books});
         }
     });
 })
 
 router.post("/requests", verifyToken, (req,res) => {
-    const usersAccept = req.body.usersAccept;
-    const usersDeny = req.body.usersDeny;
-    const bookAccept = req.body.bookAccept;
-    const bookDeny = req.body.bookDeny;
-
-    for(let i=0; i<usersAccept.length; i++) {
+    const user = req.body.user;
+    const book = req.body.book;
+    const isAccepted = req.body.isAccepted;
+    if(isAccepted) {
         let sql = "UPDATE Requests SET stat = 1, currently = 1 WHERE userid = ? AND bookid = ? ";
-        db.query(sql, [usersAccept[i], bookAccept[i]], (err,result) => {
+        db.query(sql, [user, book], (err,result) => {
             if(err)
                 res.sendStatus(500);
             else{
@@ -128,9 +131,9 @@ router.post("/requests", verifyToken, (req,res) => {
         });
     }
 
-    for(let i=0; i<usersDeny.length; i++) {
+    else {
         let sql = "UPDATE Requests SET stat = 0, currently = 0 WHERE userid = ? AND bookid = ?";
-        db.query(sql, [usersDeny[i], bookDeny[i]], (err,result) => {
+        db.query(sql, [user, book], (err,result) => {
             if(err)
                 res.status(500);
             else
@@ -139,20 +142,18 @@ router.post("/requests", verifyToken, (req,res) => {
     }
 })
 
-module.exports = router;
-
 router.get("/adreq", verifyToken, (req,res) => {
 
     const sql = "SELECT username, userid FROM Users WHERE adminrequest = 1";
-    db.sql(sql, (res,req) => {
+    db.query(sql, (err, result) => {
         if(err)
             res.status(500);
         else {
             let users = [];
             let userids = [];
             for(let i=0; i<result.length; i++) {
-                users.add(result[i].username);
-                userids.add(result[i].userid);
+                users.push(result[i].username);
+                userids.push(result[i].userid);
             }
             res.render("adminSuper", {users: users, userids: userids});
         }
@@ -160,26 +161,28 @@ router.get("/adreq", verifyToken, (req,res) => {
 })
 
 router.post("/adreq", verifyToken, (req,res) => {
-    usersAccept = req.body.usersAcceptR;
-    usersDeny = req.body.usersDenyR;
+    const user = req.body.user;
+    const isAccepted = req.body.isAccepted;
 
-    for(let i=0; usersAccept.length; i++) {
-        const sql = "UPDATE Users SET adminrequest = 0, usertype = admin WHERE userid = ?";
-        db.query(sql, [usersAccept], (err, result) => {
+    if(isAccepted) {
+        const sql = "UPDATE Users SET adminrequest = 0, usertype = 'admin' WHERE userid = ?";
+        db.query(sql, [user], (err, result) => {
             if(err)
-                res.status(500);
+                res.sendStatus(500);
             else
-                res.status(200);
+                res.sendStatus(200);
         });
     }
 
-    for(let i=0; usersDeny.length; i++) {
+    else {
         const sql = "UPDATE Users SET adminrequest = 0 WHERE userid = ?";
-        db.query(sql, [usersDeny], (err, result) => {
+        db.query(sql, [user], (err, result) => {
             if(err)
-                res.status(500);
+                res.sendStatus(500);
             else
-                res.status(200);
+                res.sendStatus(200);
         });
     }
 })
+
+module.exports = router;

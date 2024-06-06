@@ -24,23 +24,18 @@
         <div class="container py-5">
             <div class="row justify-content-center">
                 <h3 class="text-center">Return Books</h3>
-                <form class="w-75" id="return-form">
                     <ol class="py-2">
-                        <% for(int i=0; i<returnBooks.length; i++) { %>
+                        <% for(let i=0; i<returnBooks.length; i++) { %>
                         <li>
                             <div class="card">
                                 <div class="col text-start"><%= returnBooks[i] %></div>
-                                <div class="col text-end">
-                                    <input class="return form-check-input" type="checkbox" value="<% bookids[i] %>">
-                                </div>
+                                <span class="add-div col text-end p-2">
+                                    <button type="click" class="return btn bg-white btn-block" value="<%= bookids[i] %>">Return</button>
+                                </span>
                             </div>
                         </li>
                         <% } %>
                     </ol>
-                <div class="col text-center py-2">
-                    <button type="submit" class="btn btn-primary btn-block">Return</button>
-                </div>
-            </form>
             </div>
             </div>
     </div>

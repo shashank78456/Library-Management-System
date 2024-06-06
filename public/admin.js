@@ -8,134 +8,98 @@ function adminHandler(){
         window.location.href = `http://localhost:3000/admin/requests`;
     })
 
-    document.getElementById("prompt").addEventListener("click", async ()=> {
-        window.location.href = `http://localhost:3000/admin/add`;
-    })
+    try {
+        document.getElementById("prompt-open").addEventListener("click", async ()=> {
+            window.location.href = `http://localhost:3000/admin/add`;
+        })
+    }
+    catch{};
 
+    try {
     document.getElementById("adreq").addEventListener("click", async ()=> {
         window.location.href = `http://localhost:3000/admin/adreq`;
     })
+    }
+    catch{};
 
+    try {
     document.getElementById("prompt-form").addEventListener("submit", async (e)=> {
-            
         e.preventDefault();
         const bookName = document.getElementById("new-book").value;
-        await post({book: bookName}, `http://localhost:3000/admin/add`); 
+        await post({book: bookName}, `http://localhost:3000/admin/add`);
+        window.alert("Added Succesfully");
+        window.location.href = `http://localhost:3000/admin/home`;
     })
-
-    let isAddClicked = [];
-    for(let i=0; i<document.getElementsByClassName("add").length; i++) {
-        isAddClicked.add(false);
     }
+    catch{};
 
-    let booksToAdd = [];
+    try {
     const addButton = document.getElementsByClassName("add");
     for(let i=0; i<addButton.length; i++) {
-        addButton[i].addEventListener("click", ()=> {
-            if(!isAddClicked) {
-                isAddClicked[i]=true;
-                addButton[i].style.backgroundColor = "green";
-                addButton[i].style.color = "white";
-                booksToAdd.add(document.getElementsByClassName("add")[i].value);
-            }
-            else{
-                isAddClicked[i]=false;
-                addButton[i].style.backgroundColor = "white";
-                addButton[i].style.color = "black";
-                delete booksToAdd[booksToAdd.indexOf(document.getElementsByClassName("add")[i].value)];
-            }
+        addButton[i].addEventListener("click", async (e)=> {
+            e.preventDefault();
+            await post({book: addButton[i].value, isAccepted: true}, `http://localhost:3000/admin/home`);
+            window.alert("Added Successfully");
+            window.location.href = `http://localhost:3000/admin/home`;
         })
     }
-
-    let isRemoveClicked = [];
-    for(let i=0; i<document.getElementsByClassName("add").length; i++) {
-        isRemoveClicked.add(false);
-    }
-
-    let booksToRemove = [];
+    
     const removeButton = document.getElementsByClassName("remove");
     for(let i=0; i<removeButton.length; i++) {
-        removeButton[i].addEventListener("click", ()=> {
-            if(!isRemoveClicked) {
-                isRemoveClicked=true;
-                removeButton[i].style.backgroundColor = "red";
-                removeButton[i].style.color = "white";
-                booksToRemove.add(document.getElementsByClassName("remove")[i].value);
-            }
-            else {
-                isRemoveClicked=false;
-                removeButton[i].style.backgroundColor = "white";
-                removeButton[i].style.color = "black";
-                delete booksToRemove[booksToRemove.indexOf(document.getElementsByClassName("remove")[i].value)];
-            }
+        removeButton[i].addEventListener("click", async (e)=> {
+            e.preventDefault();
+            await post({book: addButton[i].value, isAccepted: false}, `http://localhost:3000/admin/home`);
+            window.alert("Removed Successfully");
+            window.location.href = `http://localhost:3000/admin/home`;
         })
     }
 
-    document.getElementById("catalog-form").addEventListener("submit", async (e)=>{
-        e.preventDefault();
+    }
+    catch{};
 
-        await post({booksToAdd: booksToAdd, booksToRemove: booksToRemove}, `http://localhost:3000/admin/home`);
-    })
-
-    let usersAccept = [];
-    let bookAccept = [];
-    let usersDeny = [];
-    let bookDeny = [];
+    try {
     const acceptButton = document.getElementsByClassName("accept");
     const denyButton = document.getElementsByClassName("deny");
     for(let i=0; i<acceptButton.length; i++) {
-        acceptButton[i].addEventListener("click", ()=> {
-            acceptButton[i].style.backgroundColor = "green";
-            acceptButton[i].style.color = "white";
-
-            usersAccept.add(document.getElementsByClassName("accept")[i].value);
-            bookAccept.add(document.getElementsByClassName("deny")[i].value);
+        acceptButton[i].addEventListener("click", async ()=> {
+            await post({book: denyButton[i].value, user: acceptButton[i].value, isAccepted: true}, `http://localhost:3000/admin/requests`);
+            window.alert("Accepted Successfully");
+            window.location.href = `http://localhost:3000/admin/requests`;
         })
     }
 
     for(let i=0; i<denyButton.length; i++) {
-        denyButton[i].addEventListener("click", ()=> {
-            denyButton[i].style.backgroundColor = "red";
-            denyButton[i].style.color = "white";
-
-            usersDeny.add(document.getElementsByClassName("accept")[i].value);
-            bookDeny.add(document.getElementsByClassName("deny")[i].value);
+        denyButton[i].addEventListener("click", async (e)=> {
+            e.preventDefault();
+            await post({book: denyButton[i].value, user: acceptButton[i].value, isAccepted: false}, `http://localhost:3000/admin/requests`);
+            window.alert("Denied Successfully");
+            window.location.href = `http://localhost:3000/admin/requests`;
         })
     }
 
-    document.getElementById("user-requests-form").addEventListener("submit", async (e)=>{
-        e.preventDefault();
+    }
+    catch{};
 
-        await post({usersAccept: usersAccept, bookAccept: bookAccept, usersDeny: usersDeny, bookDeny:bookDeny}, `https://localhost:3000/admin/requests`);
-    })
-
-    let usersAcceptR = [];
-    let usersDenyR = [];
-    const acceptButtonR = document.getElementsByClassName("accept");
-    const denyButtonR = document.getElementsByClassName("deny");
+    try {
+    const acceptButtonR = document.getElementsByClassName("acceptR");
+    const denyButtonR = document.getElementsByClassName("denyR");
     for(let i=0; i<acceptButtonR.length; i++) {
-        acceptButtonR[i].addEventListener("click", ()=> {
-            acceptButtonR[i].style.backgroundColor = "green";
-            acceptButtonR[i].style.color = "white";
-
-            usersAcceptR.add(document.getElementsByClassName("accept")[i].value);
+        acceptButtonR[i].addEventListener("click", async ()=> {
+            await post({user: acceptButtonR[i].value, isAccepted: true}, `http://localhost:3000/admin/adreq`);
+            window.alert("Accepted Successfully");
+            window.location.href = `http://localhost:3000/admin/adreq`;
         })
     }
     
     for(let i=0; i<denyButtonR.length; i++) {
-        denyButtonR[i].addEventListener("click", ()=> {
-            denyButtonR[i].style.backgroundColor = "red";
-            denyButtonR[i].style.color = "white";
-
-            usersDenyR.add(document.getElementsByClassName("deny")[i].value);
+        denyButtonR[i].addEventListener("click", async ()=> {
+            await post({user: denyButtonR[i].value, isAccepted: false}, `http://localhost:3000/admin/adreq`);
+            window.alert("Denied Successfully");
+            window.location.href = `http://localhost:3000/admin/adreq`;
         })
     }
-
-    document.getElementById("adreq-form").addEventListener("submit", async (e)=>{
-        e.preventDefault();
-
-        await post({usersAcceptR: usersAcceptR, usersDenyR: usersDenyR}, `https://localhost:3000/admin/adreq`);
-    })
+    }
+    catch{};
 }
 
 async function post(data, url) {
@@ -148,14 +112,13 @@ async function post(data, url) {
             body: JSON.stringify(data),
         })
         .then(response => {
-            resolve(response.json());
+            resolve(response);
         })
         .catch(error => {
             console.error(error);
         });
     });
 }
-
 
 async function get(url) {
     return new Promise((resolve) => {

@@ -11,16 +11,21 @@ li{
     padding: 0.3rem;
 }
 #filler{
-    height: 3rem;
-}
-#return-books, #borrow-history, #user-requests, #prompt{
-    display: none;
+    height: 8rem;
 }
 .remove:hover{
-    background-color: red !important;
+    background-color: red!important;
     color: white;
 }
 .deny:hover{
+    background-color: red !important;
+    color: white;
+}
+.return:hover{
+    background-color: red !important;
+    color: white;
+}
+.denyR:hover{
     background-color: red !important;
     color: white;
 }
@@ -29,6 +34,14 @@ li{
     color: white;
 }
 .add:hover{
+    background-color: green!important;
+    color: white;
+}
+.borrow:hover{
+    background-color: green!important;
+    color: white;
+}
+.acceptR:hover{
     background-color: green!important;
     color: white;
 }

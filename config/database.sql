@@ -1,4 +1,4 @@
-CREATE DATABASE Library IF NOT EXISTS;
+CREATE DATABASE Library;
 USE Library;
 
 CREATE TABLE Users (
@@ -12,7 +12,8 @@ CREATE TABLE Users (
     PRIMARY KEY (userid)
 );
 
-INSERT INTO Users (username, usertype, password, issuperadmin) VALUES ("superAdmin", "admin", "password", 1);
+INSERT INTO Users (username, usertype, name, password, issuperadmin) VALUES ("superAdmin", "admin", "Super Admin", "$2y$10$gS.RSvzUYSkupoNrNPX1NOG3WAafSegNBMnQNEcjN3nsVSHnMzQ96", 1);
+INSERT INTO Users (username, usertype, name, password) VALUES ("admin1", "admin", "admin1", "$2y$10$gS.RSvzUYSkupoNrNPX1NOG3WAafSegNBMnQNEcjN3nsVSHnMzQ96");
 
 CREATE TABLE Books (
     bookid INT AUTO_INCREMENT NOT NULL,
