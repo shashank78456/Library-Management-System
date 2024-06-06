@@ -2,13 +2,9 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
 
-export async function createToken(user) {
+async function createToken(user) {
     return new Promise((resolve) => {
-        const token = jwt.sign(user, process.env.SECRET_KEY, {expiresIn: "1h"}, (err, token) => {
-            if(err)
-                console.error(err);
-            return token;
-        });
+        const token = jwt.sign(user, process.env.SECRET_KEY, {expiresIn: "1h"});
         resolve(token);
     });
 }
@@ -25,4 +21,4 @@ const verifyToken = (req, res, next) => {
     });
 }
 
-module.exports = verifyToken;
+module.exports = {verifyToken, createToken};

@@ -1,9 +1,9 @@
 const express = require("express");
 const adminRouter = express.Router();
-const verifyToken = require("./auth");
-const db = require("./config/db");
+const {verifyToken, } = require("../auth");
+const db = require("../config/db");
 
-router.get("/home", verifyToken, (req,res) => {
+adminRouter.get("/home", verifyToken, (req,res) => {
 
     const sql = "SELECT bookname, stat FROM Books";
     db.query(sql, (err,result)=>{
@@ -17,7 +17,7 @@ router.get("/home", verifyToken, (req,res) => {
     });
 })
 
-router.post("/home", verifyToken, (req,res) => {
+adminRouter.post("/home", verifyToken, (req,res) => {
     const booksToAdd = req.booksToAdd;
     const booksToRemove = req.booksToRemove;
     
@@ -41,11 +41,11 @@ router.post("/home", verifyToken, (req,res) => {
     }
 })
 
-router.get("/add", verifyToken, (res,req) => {
+adminRouter.get("/add", verifyToken, (res,req) => {
     res.render("adminPrompt");
 })
 
-router.post("/add", verifyToken, (res,req) => {
+adminRouter.post("/add", verifyToken, (res,req) => {
     const book = req.book;
     
     const sql = "INSERT INTO Books (bookname) VALUES ?";
@@ -57,7 +57,7 @@ router.post("/add", verifyToken, (res,req) => {
     });
 })
 
-router.get("/requests", verifyToken, (req,res) => {
+adminRouter.get("/requests", verifyToken, (req,res) => {
 
     const sql1 = "SELECT userid, bookid FROM Requests";
     db.query(sql1, [username], (err,result) => {
@@ -91,7 +91,7 @@ router.get("/requests", verifyToken, (req,res) => {
     });
 })
 
-router.post("/requests", verifyToken, (req,res) => {
+adminRouter.post("/requests", verifyToken, (req,res) => {
     const usersAccept = req.usersAccept;
     const usersDeny = req.usersDeny;
     const bookAccept = req.bookAccept;

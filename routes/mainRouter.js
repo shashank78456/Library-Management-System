@@ -1,84 +1,76 @@
 const express = require("express");
+const path = require("path");
 const router = express.Router();
-const bcrypt = require("bcrypt");
-const db = require("./config/db");
-const createToken = require("./auth");
+const bcrypt = require("bcryptjs");
+const db = require("../config/db");
+const {verifyToken, createToken} = require("../auth");
 const adminRouter = require("./adminRouter");
 const clientRouter = require("./clientRouter");
 
 router.get("/", (req,res) => {
-    return res.sendFile(path.join(__dirname, "public", "login.html"));
+    return res.sendFile(path.join(__dirname, "/" ,"../public", "login.html"));
 })
 
 router.post("/", async (req,res) => {
-    const userType = req.body.userType;
-    const username = req.body.username;
-    const password = req.body.password;
+    const {userType, username, password} = req.body;
 
-    let opassword = "";
-    let ouserType = ""; 
-    const sql = `SELECT password, usertype FROM Users WHERE username = ?`;
-    db.query = (sql, [username], (err, result) => {
+    const sql = `SELECT password FROM Users WHERE username = ? AND usertype = ?`;
+    db.query(sql, [username, userType], async (err, result) => {
         if(err)
             return res.status(500).send(err.message);
         else if(result.length===0) {
-            return res.sendStatus(404);
+            return res.send({isValid: false});
         }
         else {
-            opassword = result[0].password;
-            ouserType = result[1].usertype;
+            const opassword = result[0].password;
+            const isSamePassword = await bcrypt.compare(password, opassword);
+
+            if(isSamePassword) {
+                const user = {username: username, password: password, userType: userType};
+                const token = await createToken(user);
+                res.status(200).cookie("token", token).send({isValid: true});
+            }
+            else{
+                res.send({isValid: false});
+            }
         }
     });
 
-    const isSamePassword = await bcrypt.compare(password, opassword);
-
-    if(isSamePassword && userType===ouserType) {
-        const user = {username: username, password: password, userType: userType};
-        const token = await createToken(user);
-        res.status(200).cookie("token", token);
-        res.redirect(`/${userType}/home`);
-    }
-    else{
-        res.sendStatus(404);
-    }
 })
 
 router.get("/signup", (req,res) => {
-    return res.sendFile(path.join(__dirname, "public", "signup.html"));
+    return res.sendFile(path.join(__dirname, "/" , "../public", "signup.html"));
 })
 
-router.post("/signup", async  (req,res) => {
+router.post("/signup", async (req,res) => {
     const userType = "client";
-    const name = req.body.name;
-    const username = req.body.username;
-    const password = req.body.password;
-
-    const saltRounds = 20;
-    const hpassword = await bcrypt.hash(password, saltRounds);
+    const {name, username, password} = req.body;
 
     const sqlCheck = `SELECT username FROM Users WHERE username = ?`;
-    db.query = (sqlCheck, [username], (err, result) => {
+    db.query(sqlCheck, [username], async (err, result) => {
         if(err)
-            return res.status(500).send(err.message);
-        else if(result.length != 0) {
-            return res.sendStatus(404);
+            res.status(500).send(err.message);
+        else if(result.length != 0) {2
+            return res.send({isValid: false});
         }
-        else{
-            res.sendStatus(200);
-            res.redirect(`/${userType}/home`);
+        else {
+            const saltRounds = 10;
+            const salt = await bcrypt.genSalt(saltRounds);
+            const hpassword = await bcrypt.hash(password, salt);
+        
+            const sql = `INSERT INTO Users (username, usertype, name, password) VALUES (?, ?, ?, ?)`;
+            db.query(sql, [username, userType, name, hpassword], async (err, result) => {
+                if(err) {
+                    res.sendStatus(500);
+                }
+                else {
+                    const user = {username: username, password: password, userType: userType};
+                    const token = await createToken(user);
+                    res.status(200).cookie("token", token).send({isValid: true});
+                }
+            });
         }
     });
-
-    const sql = `INSERT INTO Users (username, usertype, name, password) VALUES (?, ?, ?, ?)`;
-    db.query = (sql, [username, userType, name, hpassword], (err) => {
-        if(err)
-            return res.status(500).send(err.message);
-        res.sendStatus(200);
-    });
-
-    const user = {username: username, password: password, userType: userType};
-    const token = await createToken(user);
-    res.status(200).cookie("token", token);
 })
 
 router.use("/client/", clientRouter);

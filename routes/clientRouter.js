@@ -1,8 +1,7 @@
 const express = require("express");
-const clientRouter = express.Router();
-const verifyToken = require("./auth");
-const db = require("./config/db");
-const { use } = require("./adminRouter");
+const router = express.Router();
+const {verifyToken, } = require("../auth");
+const db = require("../config/db");
 
 router.get("/home", verifyToken, (req,res) => {
 
@@ -10,8 +9,15 @@ router.get("/home", verifyToken, (req,res) => {
     db.query(sql, (err,result)=>{
         if(err)
             res.status(500);
-        else
-            res.render("clientHome",{books: result[0], bookid: result[1]});
+        else {
+            let books = [];
+            let bookids = [];
+            for(let i=0; i<result.length; i++) {
+                books.add(result[i].bookname);
+                bookids.add(result[i].bookid);
+            }
+            res.render("clientHome",{books: books, bookids: bookids});
+        }
     });
 })
 
@@ -121,4 +127,4 @@ router.post("/return", verifyToken, (req,res) => {
     }
 })
 
-module.exports = clientRouter;
+module.exports = router;

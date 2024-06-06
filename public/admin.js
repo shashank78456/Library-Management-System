@@ -1,87 +1,3 @@
-function loginHandler(){
-
-    document.getElementById("login").addEventListener("submit", async (e)=>{
-
-        e.preventDefault();
-        const userType = document.getElementById("user-type").value;
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-
-        const response = await post({userType,username,password},`https://localhost:3000`);
-        if(response.status===404)
-            window.alert("Wrong credentials");
-        else if(response.status===500){
-            console.error(response.text());
-        }
-    })
-}
-
-function signupHandler(){
-    document.getElementById("signup").addEventListener("submit", async (e)=>{
-
-        e.preventDefault();
-        const name = document.getElementById("name").value;
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("pasword").value;
-        const cpassword = document.getElementById("cpassword").value;
-
-        if(await checkStrength(password)) {
-            if(cpassword===password){
-                const response = await post({name,username,password},`https://localhost:3000`);
-                if(response.status===404)
-                    window.alert("User already exists");
-                else if(response.status===500) {
-                    console.error(response.text());
-                }
-            }
-            else{
-                window.alert("Password entered is different");
-            }
-        }
-        else{
-            window.alert("Weak password. Must have length more than 7 and contain atleast 1 number and 1 special character");
-        }
-    })
-}
-
-function clientHandler(){
-    document.getElementById("view").addEventListener("click", async ()=> {
-        await get(`https://localhost:3000/client/home`);
-    })
-    
-    document.getElementById("return").addEventListener("click", async ()=> {
-        await get(`https://localhost:3000/client/return`);
-    })
-
-    document.getElementById("borrow").addEventListener("click", async ()=> {
-        await get(`https://localhost:3000/client/history`);
-    })
-
-    document.getElementById("borrow-form").addEventListener("submit", async (e)=>{
-
-        e.preventDefault();
-        let booksToBorrow = [];
-        const borrowBooks = document.getElementsByClassName("borrow")
-        for(let i=0; i<borrowBooks.length; i++) {
-            booksToBorrow.add(borrowBooks[i].value);
-        }
-
-        await post(`https://localhost:3000/client/home`, {books: booksToBorrow});
-    })
-
-    document.getElementById("return-form").addEventListener("submit", async (e)=>{
-
-        e.preventDefault();
-        const returnBooks = document.getElementsByClassName("return");
-        let booksToReturn = [];
-        for(let i=0; i<returnBooks; i++) {
-             booksToReturn.add(returnBooks.value);
-        }
-
-        await post(`https://localhost:3000/client/return`, {booksToReturn: booksToReturn});
-    })
-}
-
 function adminHandler(){
 
     document.getElementById("catalog").addEventListener("click", async ()=> {
@@ -102,6 +18,11 @@ function adminHandler(){
         const bookName = document.getElementById("new-book").value;
         await post({book: bookName}, `https://localhost:3000/admin/add`); 
     })
+
+    document.getElementById("reqadmin").addEventListener("click", () => {
+
+        //post to server
+    });
 
     let isAddClicked = [];
     for(let i=0; i<document.getElementsByClassName("add").length; i++) {
@@ -193,7 +114,7 @@ async function post(data, url) {
         fetch(url, {
             method: "POST",
             headers: {
-                "Content-type": "application/json; charset=UTF-8"
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(data),
         })
@@ -214,31 +135,4 @@ async function get(url) {
     });
 }
 
-async function checkStrength(password) {
-    let isStrong = false;
-    return new Promise((resolve) => {
-        if(password.length>=8) {
-            let specialCount=0;
-            let numberCount=0;
-            for(let i=0; i<password.length; i++) {
-                let ord = password.charCodeAt(i);
-                if(ord>=48 && ord<=57)
-                    numberCount++;
-                else if(!(ord>=65 && ord<=90) && !(ord>=97 && ord<=122))
-                    specialCount++;
-                if(numberCount>=1 && specialCount>=1){
-                    isStrong = true;
-                    break;
-                }
-            }
-        }
-        resolve(isStrong);
-    });
-}
-
-let title = document.title;
-
-if(title==="Login Page") loginHandler();
-else if(title==="Signup Page") signupHandler();
-else if(title==="Client Page") clientHandler();
-else if(title==="Admin Page") adminHandler();
+adminHandler();
