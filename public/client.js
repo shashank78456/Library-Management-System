@@ -1,14 +1,19 @@
 function clientHandler(){
+
+    document.getElementById("reqadmin").addEventListener("click", async () => {
+        await post(`http://localhost:3000/client/admin_request`, {hasRequested: true});
+    });
+
     document.getElementById("view").addEventListener("click", async ()=> {
-        await get(`https://localhost:3000/client/home`);
+        window.location.href = `http://localhost:3000/client/home`;
     })
     
     document.getElementById("return").addEventListener("click", async ()=> {
-        await get(`https://localhost:3000/client/return`);
+        window.location.href = `http://localhost:3000/client/return`;
     })
 
     document.getElementById("borrow").addEventListener("click", async ()=> {
-        await get(`https://localhost:3000/client/history`);
+        window.location.href = `http://localhost:3000/client/history`;
     })
 
     document.getElementById("borrow-form").addEventListener("submit", async (e)=>{
@@ -20,7 +25,7 @@ function clientHandler(){
             booksToBorrow.add(borrowBooks[i].value);
         }
 
-        await post(`https://localhost:3000/client/home`, {books: booksToBorrow});
+        await post(`http://localhost:3000/client/home`, {books: booksToBorrow});
     })
 
     document.getElementById("return-form").addEventListener("submit", async (e)=>{
@@ -32,12 +37,12 @@ function clientHandler(){
              booksToReturn.add(returnBooks.value);
         }
 
-        await post(`https://localhost:3000/client/return`, {booksToReturn: booksToReturn});
+        await post(`http://localhost:3000/client/return`, {booksToReturn: booksToReturn});
     })
 }
 
 async function post(data, url) {
-    return new Promise(() => {
+    return new Promise((resolve) => {
         fetch(url, {
             method: "POST",
             headers: {
@@ -46,7 +51,7 @@ async function post(data, url) {
             body: JSON.stringify(data),
         })
         .then(response => {
-            return response;
+            resolve(response.json());
         })
         .catch(error => {
             console.error(error);
@@ -54,10 +59,13 @@ async function post(data, url) {
     });
 }
 
+
 async function get(url) {
-    return new Promise(() => {
+    return new Promise((resolve) => {
         fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            resolve(response);
+        })
         .catch(error => console.error(error));
     });
 }

@@ -8,7 +8,7 @@ const adminRouter = require("./adminRouter");
 const clientRouter = require("./clientRouter");
 
 router.get("/", (req,res) => {
-    return res.sendFile(path.join(__dirname, "/" ,"../public", "login.html"));
+    res.render("login");
 })
 
 router.post("/", async (req,res) => {
@@ -39,7 +39,7 @@ router.post("/", async (req,res) => {
 })
 
 router.get("/signup", (req,res) => {
-    return res.sendFile(path.join(__dirname, "/" , "../public", "signup.html"));
+    res.render("signup");
 })
 
 router.post("/signup", async (req,res) => {
