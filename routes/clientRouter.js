@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const {verifyToken, } = require("../auth");
+const {verifyToken, createToken} = require("../auth");
 const db = require("../config/db");
 
 router.get("/home", verifyToken, (req,res) => {
 
-    const sql = "SELECT bookname, bookid FROM Books WHERE stat = 1";
+    const sql = "SELECT bookname, bookid FROM Books WHERE is_available = 1";
     db.query(sql, (err,result)=>{
         if(err)
             res.sendStatus(500);
@@ -31,12 +31,21 @@ router.post("/home", verifyToken, (req,res) => {
             res.sendStatus(500);
         else {
             const userid = result[0].userid;
-            const sql = "INSERT INTO Requests (userid, bookid) VALUES (?, ?)";
-            db.query(sql, [userid, bookid], (err, result) => {
+            const sqlcheck = "SELECT requestid FROM requests WHERE userid = ? AND bookid = ? AND ((currently = 0 AND is_accepted = 0) OR (currently = 1 AND is_accepted = 1))";
+            db.query(sqlcheck, [userid, bookid], (err, result) => {
                 if(err)
                     res.sendStatus(500);
-                else
-                    res.sendStatus(200);
+                else if(result.length!=0)
+                    res.status(200).send({isDone: false});
+                else{
+                    const sql = "INSERT INTO Requests (userid, bookid) VALUES (?, ?)";
+                    db.query(sql, [userid, bookid], (err, result) => {
+                        if(err)
+                            res.sendStatus(500);
+                        else
+                            res.status(200).send({isDone: true});
+                    });
+                }
             });
         }
     });
@@ -52,7 +61,7 @@ router.get("/history", verifyToken, (req,res) => {
             res.sendStatus(500);
         else {
             const userid = result[0].userid;
-            const sql = "SELECT bookid FROM Requests WHERE userid = ? AND stat = 1";
+            const sql = "SELECT bookid FROM Requests WHERE userid = ? AND is_accepted = 1";
             db.query(sql, [userid], (err,result) => {
                 if(err)
                     res.sendStatus(500);
@@ -130,7 +139,7 @@ router.post("/return", verifyToken, (req,res) => {
             res.sendStatus(500);
         else {
             const userid = result[0].userid;
-            const sql = "UPDATE Requests SET currently = 0, stat = 1 WHERE bookid = ? AND userid = ?";
+            const sql = "UPDATE Requests SET currently = 0, is_accepted = 1 WHERE bookid = ? AND userid = ?";
             db.query(sql, [book, userid], (err, result) => {
                 if(err)
                     res.sendStatus(500);
@@ -151,7 +160,7 @@ router.post("/adreq", verifyToken, (req,res) => {
             res.sendStatus(500);
         else {
             const userid = result[0].userid;
-            const sql = "UPDATE Users SET adminrequest = 1 WHERE userid = ?";
+            const sql = "UPDATE Users SET is_adminrequest = 1 WHERE userid = ?";
             db.query(sql, [userid], (err, result) => {
                 if(err)
                     res.sendStatus(500);

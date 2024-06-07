@@ -2,29 +2,35 @@ function signupHandler(){
     document.getElementById("signup").addEventListener("submit", async (e)=>{
 
         e.preventDefault();
-        const name = document.getElementById("name").value;
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-        const cpassword = document.getElementById("cpassword").value;
+        const name = document.getElementById("name").value.trim();
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const cpassword = document.getElementById("cpassword").value.trim();
         
-        if(await checkStrength(password)) {
-            if(cpassword===password) {
-                const response = await post({name: name, username: username, password: password},`http://localhost:3000/signup`);
-                const res = await response.json();
-                if(res.isValid) {
-                    window.location.href = `http://localhost:3000/${res.userType}/home`;
+        if(name.length!=0 && username.length!=0 && password.length!=0 && cpassword.length!=0) {
+            if(await checkStrength(password)) {
+                if(cpassword===password) {
+                    const response = await post({name: name, username: username, password: password},`http://localhost:3000/signup`);
+                    const res = await response.json();
+                    if(res.isValid) {
+                        window.location.href = `http://localhost:3000/${res.userType}/home`;
+                    }
+                    else {
+                        window.alert("User already exists");
+                    }
                 }
-                else {
-                    window.alert("User already exists");
+                else{
+                    window.alert("Password entered is different");
                 }
             }
             else{
-                window.alert("Password entered is different");
+                window.alert("Weak password. Must have length more than 7 and contain atleast 1 number and 1 special character");
             }
         }
-        else{
-            window.alert("Weak password. Must have length more than 7 and contain atleast 1 number and 1 special character");
+        else {
+            window.alert("Please Enter Valid Information");
         }
+
     })
 }
 

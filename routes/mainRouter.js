@@ -3,7 +3,7 @@ const path = require("path");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const db = require("../config/db");
-const {verifyToken, createToken} = require("../auth");
+const {verifyToken, createToken, verifyUser} = require("../auth");
 const adminRouter = require("./adminRouter");
 const clientRouter = require("./clientRouter");
 
@@ -17,7 +17,7 @@ router.post("/", async (req,res) => {
     const sql = `SELECT password FROM Users WHERE username = ? AND usertype = ?`;
     db.query(sql, [username, userType], async (err, result) => {
         if(err)
-            return res.status(500).send(err.message);
+            return res.sendStatus(500);
         else if(result.length===0) {
             return res.send({isValid: false});
         }

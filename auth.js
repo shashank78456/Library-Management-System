@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const db = require("./config/db");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -16,7 +17,13 @@ const verifyToken = (req, res, next) => {
             return res.sendStatus(403);
         else {
             req.user = user;
-            next();
+            const userType = user.userType;
+            const username = user.username;
+            const reqUserType = req.originalUrl.split("/")[1];
+            if(reqUserType===userType)
+                next();
+            else
+                return res.sendStatus(403);
         }
     });
 }

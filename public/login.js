@@ -7,12 +7,17 @@ function loginHandler(){
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
 
-        const response = await post({userType: userType, username: username, password: password},`http://localhost:3000`);
-        const res = await response.json();
-        if(res.isValid)
-            window.location.href = `http://localhost:3000/${userType}/home`;
-        else
-            window.alert("Wrong credentials");
+        if(username.length!=0 && password.length!=0) {
+            const response = await post({userType: userType, username: username, password: password},`http://localhost:3000`);
+            const res = await response.json();
+            if(res.isValid)
+                window.location.href = `http://localhost:3000/${userType}/home`;
+            else
+                window.alert("Wrong credentials");
+            }
+        else {
+            window.alert("Please Enter Valid Information");
+        }
     })
 }
 

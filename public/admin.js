@@ -30,10 +30,21 @@ function adminHandler(){
     try {
     document.getElementById("prompt-form").addEventListener("submit", async (e)=> {
         e.preventDefault();
-        const bookName = document.getElementById("new-book").value;
-        await post({book: bookName}, `http://localhost:3000/admin/add`);
-        window.alert("Added Succesfully");
-        window.location.href = `http://localhost:3000/admin/home`;
+        const bookName = document.getElementById("new-book").value.trim();
+        if(bookName.length!=0) {
+            const response  = await post({book: bookName}, `http://localhost:3000/admin/add`);
+            const res = await response.json();
+            if(res.isDone) {
+                window.alert("Added Succesfully");
+                window.location.href = `http://localhost:3000/admin/home`;
+            }
+            else {
+                window.alert("Book already exists");
+            }
+        }
+        else {
+            window.alert("Enter Valid Book Name");
+        }
     })
     }
     catch{};
@@ -53,7 +64,7 @@ function adminHandler(){
     for(let i=0; i<removeButton.length; i++) {
         removeButton[i].addEventListener("click", async (e)=> {
             e.preventDefault();
-            await post({book: addButton[i].value, isAccepted: false}, `http://localhost:3000/admin/home`);
+            await post({book: removeButton[i].value, isAccepted: false}, `http://localhost:3000/admin/home`);
             window.alert("Removed Successfully");
             window.location.href = `http://localhost:3000/admin/home`;
         })
@@ -65,9 +76,9 @@ function adminHandler(){
     try {
     const acceptButton = document.getElementsByClassName("accept");
     for(let i=0; i<acceptButton.length; i++) {
-        let str = acceptButton[i].value.split(",");
+        let requestid = acceptButton[i].value;
         acceptButton[i].addEventListener("click", async ()=> {
-            await post({book: str[1], user: str[0], isAccepted: true}, `http://localhost:3000/admin/requests`);
+            await post({requestid: requestid, isAccepted: true}, `http://localhost:3000/admin/requests`);
             window.alert("Accepted Successfully");
             window.location.href = `http://localhost:3000/admin/requests`;
         })
