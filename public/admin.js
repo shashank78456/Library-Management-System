@@ -8,6 +8,11 @@ function adminHandler(){
         window.location.href = `http://localhost:3000/admin/requests`;
     })
 
+    document.getElementById("logout").addEventListener("click", async ()=> {
+        document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 2000 00:00:01 GMT;';
+        window.location.href = `http://localhost:3000`;
+    })
+
     try {
         document.getElementById("prompt-open").addEventListener("click", async ()=> {
             window.location.href = `http://localhost:3000/admin/add`;
@@ -59,24 +64,14 @@ function adminHandler(){
 
     try {
     const acceptButton = document.getElementsByClassName("accept");
-    const denyButton = document.getElementsByClassName("deny");
     for(let i=0; i<acceptButton.length; i++) {
+        let str = acceptButton[i].value.split(",");
         acceptButton[i].addEventListener("click", async ()=> {
-            await post({book: denyButton[i].value, user: acceptButton[i].value, isAccepted: true}, `http://localhost:3000/admin/requests`);
+            await post({book: str[1], user: str[0], isAccepted: true}, `http://localhost:3000/admin/requests`);
             window.alert("Accepted Successfully");
             window.location.href = `http://localhost:3000/admin/requests`;
         })
     }
-
-    for(let i=0; i<denyButton.length; i++) {
-        denyButton[i].addEventListener("click", async (e)=> {
-            e.preventDefault();
-            await post({book: denyButton[i].value, user: acceptButton[i].value, isAccepted: false}, `http://localhost:3000/admin/requests`);
-            window.alert("Denied Successfully");
-            window.location.href = `http://localhost:3000/admin/requests`;
-        })
-    }
-
     }
     catch{};
 

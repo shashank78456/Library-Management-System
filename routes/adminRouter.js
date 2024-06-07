@@ -130,16 +130,6 @@ router.post("/requests", verifyToken, (req,res) => {
             }
         });
     }
-
-    else {
-        let sql = "UPDATE Requests SET stat = 0, currently = 0 WHERE userid = ? AND bookid = ?";
-        db.query(sql, [user, book], (err,result) => {
-            if(err)
-                res.status(500);
-            else
-                res.status(200);
-        });
-    }
 })
 
 router.get("/adreq", verifyToken, (req,res) => {

@@ -1,3 +1,10 @@
+#logout, #adreq{
+    color: var(--bs-info);
+}
+#logout:hover, #adreq:hover{
+    color: var(--bs-white);
+    background-color: var(--bs-primary)!important;
+}
 .nav-item:hover{
     color: var(--bs-primary);
 }
