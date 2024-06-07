@@ -57,16 +57,36 @@ router.post("/signup", async (req,res) => {
             const saltRounds = 10;
             const salt = await bcrypt.genSalt(saltRounds);
             const hpassword = await bcrypt.hash(password, salt);
-        
-            const sql = `INSERT INTO Users (username, usertype, name, password) VALUES (?, ?, ?, ?)`;
-            db.query(sql, [username, userType, name, hpassword], async (err, result) => {
-                if(err) {
+            
+            const sql1 = "SELECT userid FROM Users";
+            db.query(sql1, (err, result) => {
+                if(err)
                     res.sendStatus(500);
+                else if(result.length===0){
+                    const sql = `INSERT INTO Users (username, usertype, name, password, issuperadmin) VALUES (?, 'admin', ?, ?, 1)`;
+                    db.query(sql, [username, name, hpassword], async (err, result) => {
+                        if(err) {
+                            res.sendStatus(500);
+                        }
+                        else {
+                            const user = {username: username, password: password, userType: "admin"};
+                            const token = await createToken(user);
+                            res.status(200).cookie("token", token).send({isValid: true, userType: "admin"});
+                        }
+                    });
                 }
                 else {
-                    const user = {username: username, password: password, userType: userType};
-                    const token = await createToken(user);
-                    res.status(200).cookie("token", token).send({isValid: true});
+                    const sql = `INSERT INTO Users (username, usertype, name, password) VALUES (?, ?, ?, ?)`;
+                    db.query(sql, [username, userType, name, hpassword], async (err, result) => {
+                        if(err) {
+                            res.sendStatus(500);
+                        }
+                        else {
+                            const user = {username: username, password: password, userType: userType};
+                            const token = await createToken(user);
+                            res.status(200).cookie("token", token).send({isValid: true, userType: "client"});
+                        }
+                    });
                 }
             });
         }

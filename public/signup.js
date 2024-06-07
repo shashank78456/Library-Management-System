@@ -12,7 +12,7 @@ function signupHandler(){
                 const response = await post({name: name, username: username, password: password},`http://localhost:3000/signup`);
                 const res = await response.json();
                 if(res.isValid) {
-                    window.location.href = `http://localhost:3000/client/home`;
+                    window.location.href = `http://localhost:3000/${res.userType}/home`;
                 }
                 else {
                     window.alert("User already exists");
