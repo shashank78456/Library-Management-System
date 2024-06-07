@@ -12,10 +12,10 @@ router.get("/", (req,res) => {
 })
 
 router.post("/", async (req,res) => {
-    const {userType, username, password} = req.body;
+    const {username, password} = req.body;
 
-    const sql = `SELECT password FROM Users WHERE username = ? AND usertype = ?`;
-    db.query(sql, [username, userType], async (err, result) => {
+    const sql = `SELECT password, usertype FROM Users WHERE username = ?`;
+    db.query(sql, [username], async (err, result) => {
         if(err)
             return res.sendStatus(500);
         else if(result.length===0) {
@@ -25,10 +25,11 @@ router.post("/", async (req,res) => {
             const opassword = result[0].password;
             const isSamePassword = await bcrypt.compare(password, opassword);
 
+            const userType = result[0].usertype;
             if(isSamePassword) {
                 const user = {username: username, password: password, userType: userType};
                 const token = await createToken(user);
-                res.status(200).cookie("token", token).send({isValid: true});
+                res.status(200).cookie("token", token).send({isValid: true, userType: userType});
             }
             else{
                 res.send({isValid: false});

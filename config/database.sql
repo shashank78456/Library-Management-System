@@ -15,7 +15,7 @@ CREATE TABLE Users (
 CREATE TABLE Books (
     bookid INT AUTO_INCREMENT NOT NULL,
     bookname varchar(1024) DEFAULT NULL,
-    is_available INT DEFAULT 0,
+    quantity INT DEFAULT 0,
     PRIMARY KEY (bookid)
 );
 

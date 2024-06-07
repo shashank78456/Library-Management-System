@@ -5,7 +5,7 @@ const db = require("../config/db");
 
 router.get("/home", verifyToken, (req,res) => {
 
-    const sql = "SELECT bookname, bookid FROM Books WHERE is_available = 1";
+    const sql = "SELECT bookname, bookid FROM Books WHERE quantity > 0";
     db.query(sql, (err,result)=>{
         if(err)
             res.sendStatus(500);

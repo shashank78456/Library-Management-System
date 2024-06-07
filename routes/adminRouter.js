@@ -6,7 +6,7 @@ const db = require("../config/db");
 router.get("/home", verifyToken, (req,res) => {
     const user = req.user;
 
-    const sql = "SELECT bookid, bookname, is_available FROM Books";
+    const sql = "SELECT bookid, bookname, quantity FROM Books";
     db.query(sql, (err,result)=>{
         if(err)
             res.sendStatus(500);
@@ -17,7 +17,7 @@ router.get("/home", verifyToken, (req,res) => {
             for(let i=0; i<result.length; i++) {
                 bookids.push(result[i].bookid);
                 books.push(result[i].bookname);
-                stats.push(result[i].is_available);
+                stats.push(result[i].quantity);
             }
             const sqlsup =  "SELECT issuperadmin FROM Users WHERE username = ?";
             db.query(sqlsup, [user.username], (err,result)=>{
@@ -35,7 +35,7 @@ router.post("/home", verifyToken, (req,res) => {
     const isAccepted = req.body.isAccepted;
 
     if(isAccepted) {
-        const sql = "UPDATE Books SET is_available = 1 WHERE bookid = ?";
+        const sql = "UPDATE Books SET quantity = quantity + 1 WHERE bookid = ?";
         db.query(sql, [book], (err, result) => {
             if(err)
                 res.sendStatus(500);
@@ -44,7 +44,7 @@ router.post("/home", verifyToken, (req,res) => {
         });
     }
     else {
-        const sql = "UPDATE Books SET is_available = 0 WHERE bookid = ?";
+        const sql = "UPDATE Books SET quantity = quantity - 1 WHERE bookid = ?";
         db.query(sql, [book], (err, result) => {
             if(err)
                 res.sendStatus(500);
@@ -55,7 +55,15 @@ router.post("/home", verifyToken, (req,res) => {
 })
 
 router.get("/add", verifyToken, (req,res) => {
-    res.render("adminPrompt");
+    const user  = req.user;
+    const sqlsup =  "SELECT issuperadmin FROM Users WHERE username = ?";
+    db.query(sqlsup, [user.username], (err,result)=>{
+        if(err)
+            res.sendStatus(500);
+        else {
+            res.render("adminPrompt", {isSuperAdmin: result[0].issuperadmin});
+        }
+    });
 })
 
 router.post("/add", verifyToken, (req,res) => {
@@ -83,48 +91,56 @@ router.post("/add", verifyToken, (req,res) => {
 router.get("/requests", verifyToken, (req,res) => {
     const user = req.user;
 
-    const sql1 = "SELECT userid, bookid, requestid FROM Requests WHERE is_accepted = 0";
-    db.query(sql1, (err,result) => {
+    const sqlsup =  "SELECT issuperadmin FROM Users WHERE username = ?";
+    db.query(sqlsup, [user.username], (err,result)=>{
         if(err)
             res.sendStatus(500);
         else {
-            let usernames = [];
-            let userids = [];
-            let books = [];
-            let bookids = [];
-            let requestids = [];
-            const limit = result.length-1;
-            for(let i=0; i<result.length; i++) {
-                let userid = result[i].userid;
-                let bookid = result[i].bookid;
-                let requestid = result[i].requestid;
-                const sqlb = "SELECT bookname FROM Books WHERE bookid = ?";
-                db.query(sqlb, [bookid], (err,result) => {
-                    if(err)
-                        res.sendStatus(500);
-                    else {
-                        let bookname = result[0].bookname;
-                        const sqlu = "SELECT username FROM Users WHERE userid = ?";
-                        db.query(sqlu, [userid], (err,result) => {
+            const isSuperAdmin = result[0].issuperadmin;
+            const sql1 = "SELECT userid, bookid, requestid FROM Requests WHERE is_accepted = 0";
+            db.query(sql1, (err,result) => {
+                if(err)
+                    res.sendStatus(500);
+                else {
+                    let usernames = [];
+                    let userids = [];
+                    let books = [];
+                    let bookids = [];
+                    let requestids = [];
+                    const limit = result.length-1;
+                    for(let i=0; i<result.length; i++) {
+                        let userid = result[i].userid;
+                        let bookid = result[i].bookid;
+                        let requestid = result[i].requestid;
+                        const sqlb = "SELECT bookname FROM Books WHERE bookid = ?";
+                        db.query(sqlb, [bookid], (err,result) => {
                             if(err)
                                 res.sendStatus(500);
                             else {
-                                let username = result[0].username;
-                                userids.push(userid);
-                                usernames.push(username);
-                                bookids.push(bookid);
-                                books.push(bookname);
-                                requestids.push(requestid);
-                                if(i===limit) {
-                                    res.render("adminRequests", {userids: userids, usernames: usernames, bookids: bookids, books: books, requestids: requestids});
-                                }
+                                let bookname = result[0].bookname;
+                                const sqlu = "SELECT username FROM Users WHERE userid = ?";
+                                db.query(sqlu, [userid], (err,result) => {
+                                    if(err)
+                                        res.sendStatus(500);
+                                    else {
+                                        let username = result[0].username;
+                                        userids.push(userid);
+                                        usernames.push(username);
+                                        bookids.push(bookid);
+                                        books.push(bookname);
+                                        requestids.push(requestid);
+                                        if(i===limit) {
+                                            res.render("adminRequests", {userids: userids, usernames: usernames, bookids: bookids, books: books, requestids: requestids, isSuperAdmin: isSuperAdmin});
+                                        }
+                                    }
+                                });
                             }
                         });
                     }
-                });
-            }
-            if(limit===-1)
-                res.render("adminRequests", {userids: userids, usernames: usernames, bookids: bookids, books: books, requestids: requestids});
+                    if(limit===-1)
+                        res.render("adminRequests", {userids: userids, usernames: usernames, bookids: bookids, books: books, requestids: requestids, isSuperAdmin: isSuperAdmin});
+                }
+            });
         }
     });
 })
@@ -138,26 +154,49 @@ router.post("/requests", verifyToken, (req,res) => {
             if(err)
                 res.sendStatus(500);
             else{
-                res.sendStatus(200);
+                let sqlget = "SELECT bookid FROM Requests WHERE requestid = ?";
+                db.query(sqlget, [requestid], (err,result) => {
+                    if(err)
+                        res.sendStatus(500);
+                    else{
+                        const bookid = result[0].bookid;
+                        let sql1 = "UPDATE Books SET quantity = quantity - 1 WHERE bookid = ?";
+                        db.query(sql1, [bookid], (err, result) => {
+                            if(err)
+                                res.sendStatus(500);
+                            else
+                                res.sendStatus(200);
+                        });
+                    }
+                });
             }
         });
     }
 })
 
 router.get("/adreq", verifyToken, (req,res) => {
+    const user = req.user;
 
-    const sql = "SELECT username, userid FROM Users WHERE is_adminrequest = 1";
-    db.query(sql, (err, result) => {
+    const sqlsup =  "SELECT issuperadmin FROM Users WHERE username = ?";
+    db.query(sqlsup, [user.username], (err,result)=>{
         if(err)
-            res.status(500);
+            res.sendStatus(500);
         else {
-            let users = [];
-            let userids = [];
-            for(let i=0; i<result.length; i++) {
-                users.push(result[i].username);
-                userids.push(result[i].userid);
-            }
-            res.render("adminSuper", {users: users, userids: userids});
+            const isSuperAdmin = result[0].issuperadmin;
+            const sql = "SELECT username, userid FROM Users WHERE is_adminrequest = 1";
+            db.query(sql, (err, result) => {
+                if(err)
+                    res.status(500);
+                else {
+                    let users = [];
+                    let userids = [];
+                    for(let i=0; i<result.length; i++) {
+                        users.push(result[i].username);
+                        userids.push(result[i].userid);
+                    }
+                    res.render("adminSuper", {users: users, userids: userids, isSuperAdmin: isSuperAdmin});
+                }
+            });
         }
     });
 })

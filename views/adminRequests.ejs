@@ -14,9 +14,15 @@
             <span id="catalog" class="nav-item px-3">Manage Catalog</span>
             <span id="requests" class="nav-item px-3">User Requests</span>
         </span>
-        <span class="col text-end p-2">
-            <button type="click" class="btn bg-white btn-block" id="logout">Logout</button>
-        </span>
+        <span class="container-fluid-end">
+            <% if(isSuperAdmin) { %>
+            <span class="col text-end p-2">
+                <button type="click" id="adreq" class="btn bg-white btn-block">Manage Admins</button>
+            </span>
+            <% } %>
+            <span class="col text-end p-2">
+                <button type="click" class="btn bg-white btn-block" id="logout">Logout</button>
+            </span>
     </nav>
     <div id="filler"></div>
     <div id="user-requests">
