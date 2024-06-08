@@ -143,8 +143,15 @@ router.post("/return", verifyToken, (req,res) => {
             db.query(sql, [book, userid], (err, result) => {
                 if(err)
                     res.sendStatus(500);
-                else
-                    res.sendStatus(200);
+                else{
+                    const sqlu = "UPDATE Books SET quantity = quantity + 1 WHERE bookid = ?";
+                    db.query(sqlu, [book], (err, result) => {
+                        if(err)
+                            res.sendStatus(500);
+                        else
+                            res.sendStatus(200);
+                    });
+                }
             });
         }
     });
