@@ -36,14 +36,14 @@ router.post("/home", verifyToken, (req,res) => {
                 if(err)
                     res.sendStatus(500);
                 else if(result.length!=0)
-                    res.status(200).send({isDone: false});
+                    res.status(200).send({isRequested: false});
                 else{
                     const sql = "INSERT INTO Requests (userid, bookid) VALUES (?, ?)";
                     db.query(sql, [userid, bookid], (err, result) => {
                         if(err)
                             res.sendStatus(500);
                         else
-                            res.status(200).send({isDone: true});
+                            res.status(200).send({isRequested: true});
                     });
                 }
             });
@@ -167,12 +167,21 @@ router.post("/adreq", verifyToken, (req,res) => {
             res.sendStatus(500);
         else {
             const userid = result[0].userid;
-            const sql = "UPDATE Users SET is_adminrequest = 1 WHERE userid = ?";
-            db.query(sql, [userid], (err, result) => {
+            const sqlcheck = "SELECT is_adminrequest FROM Users WHERE userid = ?";
+            db.query(sqlcheck, [userid], (err, result) => {
                 if(err)
                     res.sendStatus(500);
-                else
-                    res.sendStatus(200);
+                else if(result[0].is_adminrequest===1)
+                    res.send({isAlreadyRequested: false});
+                else if(result[0].is_adminrequest===0){
+                    const sql = "UPDATE Users SET is_adminrequest = 1 WHERE userid = ?";
+                    db.query(sql, [userid], (err, result) => {
+                        if(err)
+                            res.sendStatus(500);
+                        else
+                            res.send({isAlreadyRequested: true});
+                    });
+                }
             });
         }
     });

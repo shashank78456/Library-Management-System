@@ -6,9 +6,26 @@ const db = require("../config/db");
 const {verifyToken, createToken, verifyUser} = require("../auth");
 const adminRouter = require("./adminRouter");
 const clientRouter = require("./clientRouter");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+dotenv.config();
 
 router.get("/", (req,res) => {
-    res.render("login");
+    const token = req.cookies.token;
+    if(token){
+        jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+            if(err)
+                return res.sendStatus(403);
+            else {
+                req.user = user;
+            }
+        });
+        const userType = req.user.userType;
+        res.redirect(`/${userType}/home`);
+    }
+    else {
+        res.render("login");
+    }
 })
 
 router.post("/", async (req,res) => {
@@ -40,7 +57,21 @@ router.post("/", async (req,res) => {
 })
 
 router.get("/signup", (req,res) => {
-    res.render("signup");
+    const token = req.cookies.token;
+    if(token){
+        jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+            if(err)
+                return res.sendStatus(403);
+            else {
+                req.user = user;
+            }
+        });
+        const userType = req.user.userType;
+        res.redirect(`/${userType}/home`);
+    }
+    else{
+        res.render("signup");
+    }
 })
 
 router.post("/signup", async (req,res) => {

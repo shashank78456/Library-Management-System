@@ -34,7 +34,7 @@ function adminHandler(){
         if(bookName.length!=0) {
             const response  = await post({book: bookName}, `http://localhost:3000/admin/add`);
             const res = await response.json();
-            if(res.isDone) {
+            if(res.isAdded) {
                 window.alert("Added Succesfully");
                 window.location.href = `http://localhost:3000/admin/home`;
             }
@@ -54,7 +54,7 @@ function adminHandler(){
     for(let i=0; i<addButton.length; i++) {
         addButton[i].addEventListener("click", async (e)=> {
             e.preventDefault();
-            await post({book: addButton[i].value, isAccepted: true}, `http://localhost:3000/admin/home`);
+            await post({book: addButton[i].value, toDo: "add"}, `http://localhost:3000/admin/home`);
             window.alert("Added Successfully");
             window.location.href = `http://localhost:3000/admin/home`;
         })
@@ -64,8 +64,18 @@ function adminHandler(){
     for(let i=0; i<removeButton.length; i++) {
         removeButton[i].addEventListener("click", async (e)=> {
             e.preventDefault();
-            await post({book: removeButton[i].value, isAccepted: false}, `http://localhost:3000/admin/home`);
+            await post({book: removeButton[i].value, toDo: "remove"}, `http://localhost:3000/admin/home`);
             window.alert("Removed Successfully");
+            window.location.href = `http://localhost:3000/admin/home`;
+        })
+    }
+
+    const deleteButton = document.getElementsByClassName("delete");
+    for(let i=0; i<deleteButton.length; i++) {
+        deleteButton[i].addEventListener("click", async (e)=> {
+            e.preventDefault();
+            await post({book: deleteButton[i].value, toDo: "delete"}, `http://localhost:3000/admin/home`);
+            window.alert("Deleted Successfully");
             window.location.href = `http://localhost:3000/admin/home`;
         })
     }

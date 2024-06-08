@@ -21,7 +21,7 @@ li{
     height: 8rem;
 }
 .remove:hover{
-    background-color: red!important;
+    background-color: rgb(255, 157, 0)!important;
     color: white;
 }
 .deny:hover{
@@ -50,5 +50,9 @@ li{
 }
 .acceptR:hover{
     background-color: green!important;
+    color: white;
+}
+.delete:hover{
+    background-color: red !important;
     color: white;
 }

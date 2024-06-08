@@ -32,9 +32,9 @@ router.get("/home", verifyToken, (req,res) => {
 
 router.post("/home", verifyToken, (req,res) => {
     const book = req.body.book;
-    const isAccepted = req.body.isAccepted;
+    const toDo = req.body.toDo;
 
-    if(isAccepted) {
+    if(toDo==="add") {
         const sql = "UPDATE Books SET quantity = quantity + 1 WHERE bookid = ?";
         db.query(sql, [book], (err, result) => {
             if(err)
@@ -43,13 +43,29 @@ router.post("/home", verifyToken, (req,res) => {
                 res.sendStatus(200);
         });
     }
-    else {
+    else if(toDo==="remove") {
         const sql = "UPDATE Books SET quantity = quantity - 1 WHERE bookid = ?";
         db.query(sql, [book], (err, result) => {
             if(err)
                 res.sendStatus(500);
             else
                 res.sendStatus(200);
+        });
+    }
+    else if(toDo==="delete") {
+        const sql1 = "DELETE FROM Requests WHERE bookid= ?";
+        db.query(sql1, [book], (err, result) => {
+            if(err)
+                res.sendStatus(500);
+            else {
+                const sql = "DELETE FROM Books WHERE bookid = ?";
+                db.query(sql, [book], (err, result) => {
+                    if(err)
+                        res.sendStatus(500);
+                    else
+                        res.sendStatus(200);
+                });
+            }
         });
     }
 })
@@ -71,10 +87,10 @@ router.post("/add", verifyToken, (req,res) => {
     
     const sqlcheck = "SELECT bookid FROM Books WHERE bookname = ?";
     db.query(sqlcheck, [book], (err,result) => {
-        if(err) {console.log(err.message)
-            res.sendStatus(500);}
+        if(err)
+            res.sendStatus(500);
         else if(result.length!=0) {
-            res.send({isDone: false});
+            res.send({isAdded: false});
         }
         else {
             const sql = "INSERT INTO Books (bookname) VALUES (?)";
@@ -82,7 +98,7 @@ router.post("/add", verifyToken, (req,res) => {
                 if(err)
                     res.sendStatus(500);
                 else
-                    res.send({isDone: true});
+                    res.send({isAdded: true});
             });
         }
     });

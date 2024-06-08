@@ -1,8 +1,14 @@
 function clientHandler(){
 
     document.getElementById("reqadmin").addEventListener("click", async () => {
-        await post({hasRequested: true}, `http://localhost:3000/client/adreq`);
-        window.alert("Successfully Requested to Become Admin");
+        const response = await post({hasRequested: true}, `http://localhost:3000/client/adreq`);
+        const res = await response.json();
+        if(res.isAlreadyRequested) {
+            window.alert("Successfully Requested to Become Admin");
+        }
+        else{
+            window.alert("Already Requested to Become Admin");
+        }
     });
 
     document.getElementById("view").addEventListener("click", async ()=> {
@@ -27,7 +33,7 @@ function clientHandler(){
         borrowBooks[i].addEventListener("click", async () => {
             const response = await post({book: borrowBooks[i].value}, `http://localhost:3000/client/home`);
             const res = await response.json();
-            if(res.isDone) {
+            if(res.isRequested) {
                 window.alert("Requested Successfully");
                 window.location.href = `http://localhost:3000/client/home`;
             }
