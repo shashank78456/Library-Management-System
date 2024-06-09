@@ -74,9 +74,15 @@ function adminHandler(){
     for(let i=0; i<deleteButton.length; i++) {
         deleteButton[i].addEventListener("click", async (e)=> {
             e.preventDefault();
-            await post({book: deleteButton[i].value, toDo: "delete"}, `http://localhost:3000/admin/home`);
-            window.alert("Deleted Successfully");
-            window.location.href = `http://localhost:3000/admin/home`;
+            const response = await post({book: deleteButton[i].value, toDo: "delete"}, `http://localhost:3000/admin/home`);
+            const res = await response.json();
+            if(res.isDeleted) {
+                window.alert("Deleted Successfully");
+                window.location.href = `http://localhost:3000/admin/home`;
+            }
+            else{
+                window.alert("Cannot delete this book as it is already borrowed");
+            }
         })
     }
 

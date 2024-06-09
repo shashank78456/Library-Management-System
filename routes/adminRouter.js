@@ -53,18 +53,28 @@ router.post("/home", verifyToken, (req,res) => {
         });
     }
     else if(toDo==="delete") {
-        const sql1 = "DELETE FROM Requests WHERE bookid= ?";
-        db.query(sql1, [book], (err, result) => {
+        const sqlcheck = "SELECT requestid FROM Requests WHERE bookid = ? AND currently = 1";
+        db.query(sqlcheck, [book], (err, result) => {
             if(err)
                 res.sendStatus(500);
-            else {
-                const sql = "DELETE FROM Books WHERE bookid = ?";
-                db.query(sql, [book], (err, result) => {
+            else if(result.length===0) {
+                const sql1 = "DELETE FROM Requests WHERE bookid = ?";
+                db.query(sql1, [book], (err, result) => {
                     if(err)
                         res.sendStatus(500);
-                    else
-                        res.sendStatus(200);
+                    else {
+                        const sql = "DELETE FROM Books WHERE bookid = ?";
+                        db.query(sql, [book], (err, result) => {
+                            if(err)
+                                res.sendStatus(500);
+                            else
+                                res.send({isDeleted: true});
+                        });
+                    }
                 });
+            }
+            else {
+                res.send({isDeleted: false});
             }
         });
     }
